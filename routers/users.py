@@ -24,7 +24,7 @@ def get_db():
 
 db_dependency = Annotated[Session, Depends(get_db)]
 user_dependency = Annotated[dict, Depends(get_current_user)]
-bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
 
 
 class UserVerification(BaseModel):
@@ -50,12 +50,10 @@ async def change_password(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Authentication failed"
         )
     user_model = db.query(Users).filter(Users.id == user.get("id")).first()
-    if not bcrypt_context.verify(
-        user_verification.password, user_model.hashed_password
-    ):
+    if not pwd_context.verify(user_verification.password, user_model.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Error on password change"
         )
-    user_model.hashed_password = bcrypt_context.hash(user_verification.new_password)
+    user_model.hashed_password = pwd_context.hash(user_verification.new_password)
     db.add(user_model)
     db.commit()

@@ -5,7 +5,11 @@ from database import engine
 from models import Base
 from routers import admin, auth, todos, users
 
-app = FastAPI()
+app = FastAPI(
+    title="Todo App API",
+    description="Backend API for the Todo application",
+    version="1.0.0",
+)
 
 Base.metadata.create_all(bind=engine)
 

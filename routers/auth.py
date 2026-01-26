@@ -22,7 +22,7 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = "HS256"
 
-bcrypt_context = CryptContext(schemes=["argon2"], deprecated="auto")
+pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
 
 oauth2_bearer = OAuth2PasswordBearer(tokenUrl="auth/token")
 
@@ -57,7 +57,7 @@ def authenticate_user(username: str, password: str, db):
     user = db.query(Users).filter(Users.username == username).first()
     if not user:
         return False
-    if not bcrypt_context.verify(password, user.hashed_password):
+    if not pwd_context.verify(password, user.hashed_password):
         return False
     return user
 
@@ -98,7 +98,7 @@ async def create_user(db: db_dependency, create_user: CreateUserRequest):
         email=create_user.email,
         first_name=create_user.first_name,
         last_name=create_user.last_name,
-        hashed_password=bcrypt_context.hash(create_user.password),
+        hashed_password=pwd_context.hash(create_user.password),
         role=create_user.role,
         is_active=True,
         phone_number=create_user.phone_number,
